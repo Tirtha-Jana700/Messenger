@@ -1,4 +1,4 @@
-const socket = io();
+const socket = io(https://messaging-app-tewf.onrender.com);
 const usernameInput = document.getElementById("username");
 const messageInput = document.getElementById("message");
 const sendBtn = document.getElementById("send");
