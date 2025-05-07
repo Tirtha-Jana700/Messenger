@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background: #181818;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+        
+        .heading {
+            color: #ffffff;
+            background: linear-gradient(135deg, #ff758c, #ff7eb3);
+            border-radius: 20px;
+            padding: 15px;
+            width: 80%;
+            max-width: 400px;
+            font-size: 22px;
+            font-weight: bold;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .input-container {
+            background: #222;
+            padding: 15px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 400px;
+            margin: 20px auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .join-chat-button {
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .join-chat-button:hover {
+            background: #388e3c;
+        }
+
+        .chat-container {
+            background: #292929;
+            width: 80%;
+            max-width: 400px;
+            height: 300px;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+            border: 2px solid #444;
+            box-shadow: 0px 0px 15px rgba(255, 120, 130, 0.5);
+        }
+
+        .message-box {
+            display: flex;
+            width: 80%;
+            max-width: 400px;
+            margin-top: 15px;
+            gap: 10px;
+        }
+
+        .send-message-button {
+            background: #ff5722;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .send-message-button:hover {
+            background: #e64a19;
+        }
+
+        .message {
+            background: #ff808a;
+            color: black;
+            padding: 8px;
+            border-radius: 10px;
+            margin-bottom: 5px;
+            max-width: 80%;
+            word-wrap: break-word;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h2 class="heading">Private Chat</h2>
+
+    <div class="input-container">
+        <input id="room" type="text" placeholder="Enter Chat Code">
+        <button class="join-chat-button" onclick="joinChat()">Join</button>
+    </div>
+
+    <div class="chat-container" id="chat-box"></div>
+
+    <div class="message-box">
+        <input id="message" type="text" placeholder="Type a message">
+        <button class="send-message-button" onclick="sendMessage()">Send</button>
+    </div>
+
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <script>
+        // Connect to the online server
+        const socket = io("https://chatting-app-uogy.onrender.com"); // Replace with your actual Render URL
+        let currentRoom = "";
+
+        function joinChat() {
+            currentRoom = document.getElementById("room").value;
+            if (currentRoom) {
+                socket.emit("joinRoom", currentRoom);
+                alert("Joined chat room: " + currentRoom);
+            }
+        }
+
+        socket.on("receiveMessage", (message) => {
+            let chatBox = document.getElementById("chat-box");
+            let messageElement = document.createElement("p");
+            messageElement.classList.add("message");
+            messageElement.innerText = message;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll
+        });
+
+        function sendMessage() {
+            const message = document.getElementById("message").value;
+            if (currentRoom) {
+                socket.emit("sendMessage", { room: currentRoom, message });
+                document.getElementById("message").value = "";
+            } else {
+                alert("Join a chat first!");
+            }
+        }
+    </script>
+</body>
+</html>

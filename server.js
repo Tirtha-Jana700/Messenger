@@ -1,27 +1,34 @@
 const express = require("express");
 const http = require("http");
-const { Server } = require("socket.io");
+const socketIo = require("socket.io");
+const cors = require("cors");
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+app.use(cors());
 
-app.use(express.static(__dirname + "/public"));
+const server = http.createServer(app);
+const io = socketIo(server, {
+    cors: { origin: "*" }
+});
 
 io.on("connection", (socket) => {
-  socket.on("chat message", (data) => {
-    io.emit("chat message", data);
-  });
+    console.log("User connected:", socket.id);
 
-  socket.on("file", (data) => {
-    io.emit("file", data);
-  });
+    // Joining a private chat room
+    socket.on("joinRoom", (room) => {
+        socket.join(room);
+        console.log(`User ${socket.id} joined room: ${room}`);
+    });
 
-  socket.on("typing", (username) => {
-    socket.broadcast.emit("typing", username);
-  });
+    // Sending messages in the private room
+    socket.on("sendMessage", ({ room, message }) => {
+        io.to(room).emit("receiveMessage", message);
+    });
+
+    // Handling disconnection
+    socket.on("disconnect", () => {
+        console.log("User disconnected:", socket.id);
+    });
 });
 
-server.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
-});
+server.listen(3000, "0.0.0.0", () => console.log("Server running on port 3000"));
